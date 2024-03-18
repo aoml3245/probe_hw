@@ -1,0 +1,22 @@
+{
+  "name": "hw",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aoml3245/probe_hw.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aoml3245/probe_hw/issues"
+  },
+  "homepage": "https://github.com/aoml3245/probe_hw#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.18.3"
+  }
+}
