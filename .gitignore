@@ -14,8 +14,6 @@ psd
 thumb
 sketch
 
-docker-compose.yaml
-build_deploy.sh
 
 
 # dependencies
@@ -30,6 +28,7 @@ build_deploy.sh
 /build
 
 # misc
+.env
 .DS_Store
 .env.local
 .env.development.local
