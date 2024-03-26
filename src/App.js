@@ -19,7 +19,6 @@ function KimchiNicknamePage() {
   const submitNickname = () => {
     setNickname2(nickname);
   };
-
   return (
     <div>
       <h1>김치에 대한 애칭을 지어주세요</h1>
