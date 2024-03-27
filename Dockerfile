@@ -7,4 +7,7 @@ COPY package.json .
 RUN npm install
 COPY . .
 
-CMD ["npm", "start"]
+RUN cd /app/client; npm install;
+RUN cd /app/server; npm install;
+
+CMD [ "npm", "run", "dev"]

@@ -6,7 +6,13 @@ const Board = () => {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [pageSize, setPageSize] = useState(10);
+  const [pageNum, setPageNum] = useState(0);
   const [newPost, setNewPost] = useState({
+    author: "",
+    title: "",
+    content: "",
+  });
+  const [eidtPost, setEditPost] = useState({
     author: "",
     title: "",
     content: "",
@@ -18,8 +24,9 @@ const Board = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get("http://localhost:25000/posts");
-      console.log(response);
+      const response = await axios.get(
+        process.env.REACT_APP_BACK_URL + "/posts"
+      );
       setPosts(response.data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -29,9 +36,11 @@ const Board = () => {
   const handleSelectPost = async (post) => {
     try {
       const response = await axios.get(
-        `http://127.0.0.1:25000/posts/${post.id}`
+        process.env.REACT_APP_BACK_URL + `/post/${post.id}`
       );
-      setSelectedPost(response.data);
+      await setSelectedPost(response.data);
+      setEditPost(response.data);
+      console.log("df", selectedPost);
     } catch (error) {
       console.error("Error fetching post:", error);
     }
@@ -39,25 +48,26 @@ const Board = () => {
 
   const handleCreatePost = async () => {
     try {
-      await axios.post("http://127.0.0.1:25000/posts", newPost);
-      setPosts([...posts, newPost]);
-      setNewPost({ author: "", title: "", content: "" });
+      await axios.post(process.env.REACT_APP_BACK_URL + "/post", newPost);
+
+      fetchPosts();
+      setNewPost({ author: "", title: "", content: "", created_at: "" });
+
+      setEditPost({ author: "", title: "", content: "", created_at: "" });
     } catch (error) {
       console.error("Error creating post:", error);
     }
   };
 
-  const handleUpdatePost = async (updatedPost) => {
+  const handleUpdatePost = async () => {
     try {
       await axios.put(
-        `http://127.0.0.1:25000/posts/${selectedPost.id}`,
-        updatedPost
+        process.env.REACT_APP_BACK_URL + `/post/${selectedPost.id}`,
+        eidtPost
       );
-      const updatedPosts = posts.map((post) =>
-        post.id === selectedPost.id ? { ...post, ...updatedPost } : post
-      );
-      setPosts(updatedPosts);
+      fetchPosts();
       setSelectedPost(null);
+      setEditPost({ author: "", title: "", content: "", created_at: "" });
     } catch (error) {
       console.error("Error updating post:", error);
     }
@@ -65,7 +75,9 @@ const Board = () => {
 
   const handleDeletePost = async () => {
     try {
-      await axios.delete(`http://127.0.0.1:25000/posts/${selectedPost.id}`);
+      await axios.delete(
+        process.env.REACT_APP_BACK_URL + `/post/${selectedPost.id}`
+      );
       const updatedPosts = posts.filter((post) => post.id !== selectedPost.id);
       setPosts(updatedPosts);
       setSelectedPost(null);
@@ -81,32 +93,6 @@ const Board = () => {
       {" "}
       {/* 추가된 CSS 클래스 */}
       <h1>게시판</h1>
-      <div className="posts-section">
-        {" "}
-        {/* 추가된 CSS 클래스 */}
-        <h2>글 목록</h2>
-        <select onChange={(e) => setPageSize(parseInt(e.target.value))}>
-          <option value={10}>10개씩</option>
-          <option value={20}>20개씩</option>
-          <option value={30}>30개씩</option>
-        </select>
-        <ul>
-          {posts.slice(0, pageSize).map((post, index) => (
-            <li key={index} className="post-item">
-              {" "}
-              {/* 추가된 CSS 클래스 */}
-              <span onClick={() => handleSelectPost(post)}>
-                {post.title}
-              </span> - {post.author} - {post.timestamp}
-              {index === posts.length - 1 && posts.length > pageSize && (
-                <button onClick={() => console.log("Go to next page")}>
-                  Next Page
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      </div>
       <div className="new-post-section">
         {" "}
         {/* 추가된 CSS 클래스 */}
@@ -130,24 +116,92 @@ const Board = () => {
         />
         <button onClick={handleCreatePost}>작성</button>
       </div>
-      {selectedPost && (
+      {selectedPost !== null && (
         <div className="selected-post-section">
           {" "}
           {/* 추가된 CSS 클래스 */}
           <h2>글 상세 내용</h2>
-          <p>글쓴이: {selectedPost.author}</p>
-          <p>제목: {selectedPost.title}</p>
-          <p>내용: {selectedPost.content}</p>
-          <button
-            onClick={() => handleUpdatePost({ author: "Updated Author" })}
-          >
-            글 수정
-          </button>
+          <p>
+            글쓴이:{" "}
+            <input
+              type="text"
+              placeholder="글쓴이"
+              value={eidtPost.author}
+              onChange={(e) =>
+                setEditPost({ ...eidtPost, author: e.target.value })
+              }
+            />
+          </p>
+          <p>
+            제목:{" "}
+            <input
+              type="text"
+              placeholder="제목"
+              value={eidtPost.title}
+              onChange={(e) =>
+                setEditPost({ ...eidtPost, title: e.target.value })
+              }
+            />
+          </p>
+          <p>
+            내용:{" "}
+            <textarea
+              placeholder="내용"
+              value={eidtPost.content}
+              onChange={(e) =>
+                setEditPost({ ...eidtPost, content: e.target.value })
+              }
+            />
+          </p>
+          <p>작성시간: {eidtPost.created_at}</p>
+          <button onClick={() => handleUpdatePost()}>글 수정</button>
           <button onClick={() => handleDeletePost(posts.indexOf(selectedPost))}>
             글 삭제
           </button>
         </div>
       )}
+      <div className="posts-section">
+        {" "}
+        {/* 추가된 CSS 클래스 */}
+        <h2>글 목록</h2>
+        <select onChange={(e) => setPageSize(parseInt(e.target.value))}>
+          <option value={10}>10개씩</option>
+          <option value={20}>20개씩</option>
+          <option value={30}>30개씩</option>
+        </select>
+        <ul>
+          {posts
+            .slice(pageNum * pageSize, (pageNum + 1) * pageSize)
+            .map((post, index) => (
+              <li
+                key={index}
+                className="post-item"
+                onClick={() => handleSelectPost(post)}
+              >
+                {/* 추가된 CSS 클래스 */}
+                <span>{post.title}</span> - {post.author} - {post.created_at}
+              </li>
+            ))}
+        </ul>
+        <button
+          onClick={() => {
+            if (pageNum !== 0) {
+              console.log("Go to prev page");
+              setPageNum(pageNum - 1);
+            }
+          }}
+        >
+          Prev Page
+        </button>
+        <button
+          onClick={() => {
+            console.log("Go to next page");
+            setPageNum(pageNum + 1);
+          }}
+        >
+          Next Page
+        </button>
+      </div>
     </div>
   );
 };

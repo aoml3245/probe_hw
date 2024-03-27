@@ -1,18 +1,5 @@
 version: "3.1"
 services:
-  front:
-    image: proweb_hw
-    container_name: proweb_hw_front
-    # stop 상태가 되지 않는 이상 재시작
-    restart: unless-stopped
-    ports:
-      - 20180:3000
-    environment:
-      # Container 내의 시간대를 대한민국으로 설정
-      TZ: Asia/Seoul
-      # VSCode의 설정이 저장될 위치 -> 컨테이너가 재시작 되어도 설정이 초기화 되지 않도록 조치
-    networks:
-      - proweb_network
   back:
     image: mysql
     container_name: proweb_hw_back
@@ -29,7 +16,30 @@ services:
       # VSCode의 설정이 저장될 위치 -> 컨테이너가 재시작 되어도 설정이 초기화 되지 않도록 조치
     networks:
       - proweb_network
-        
+  front:
+    image: proweb_hw
+    container_name: proweb_hw_front
+    # stop 상태가 되지 않는 이상 재시작
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+      - 25000:25000
+    environment:
+      # Container 내의 시간대를 대한민국으로 설정
+      TZ: Asia/Seoul
+      # VSCode의 설정이 저장될 위치 -> 컨테이너가 재시작 되어도 설정이 초기화 되지 않도록 조치
+    networks:
+      - proweb_network
+    depends_on:
+      - back
+    links:
+      - back
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://proweb_hw_back:3306"]
+      interval: 2s
+      timeout: 2s
+      retries: 5
+
 volumes:
   codespace-config:
   proweb-volume:
